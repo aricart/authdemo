@@ -31,15 +31,12 @@ test:
 
 release: fmt test compile
 
-install: push update nats
+update-all: update-server update-assets
 
-push: compile
+update-server: compile
 	scp $(BUILD_DIR)/authdemo_linux_amd64/* root@authdemo.nats-demo.info:/usr/local/bin
 
-update:
+update-assets:
 	scp -r $(CONTENT_DIR)/* root@authdemo.nats-demo.info:/srv/content_root
 	scp $(CWD)/server.conf root@authdemo.nats-demo.info:/srv/
 	scp $(CWD)/gcreds.json root@authdemo.nats-demo.info:/srv/
-
-nats:
-	scp /Users/synadia/Dropbox/code/bin/nats-server root@authdemo.nats-demo.info:/usr/local/bin

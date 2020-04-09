@@ -1,6 +1,19 @@
-// authentication jwt - added by the server
-const jwt = '{{cjwt}}'
-const prefix = '{{prefix}}'
+const cookies = {}
+decodeURIComponent(document.cookie).split(";").forEach((v) => {
+  v = v.trim()
+  let sep = v.indexOf("=")
+  const key = v.substring(0, sep)
+  const value = v.substring(sep+1)
+  cookies[key] = value
+})
+
+const required = ['ws_server_url', 'cjwt', 'prefix', 'user_name']
+required.forEach((v) => {
+  if (!cookies[v]) {
+    alert(`expected cookie ${v} is not set`)
+    location.href = "/auth.html"
+  }
+})
 
 // add an entry to the document
 function addEntry (s) {
@@ -9,12 +22,22 @@ function addEntry (s) {
   document.getElementById('log').appendChild(p)
 }
 
-async function run() {
-  const id = nats.nuid.next()
+let nc
+function disconnectNATS() {
+  console.log('disconnect')
+  if (nc) {
+    nc.publish(`${cookies['prefix']}.exited`)
+    nc.flush().then(() => {
+      nc.close()
+    })
+  }
+}
 
-  nats.connect({url: '{{ws_server_url}}', noEcho: true, userJwt: jwt})
-    .then(async (nc) => {
-      addEntry(`connected as ${id} to ${nc.options.url}`)
+async function run() {
+  nats.connect({url: cookies['ws_server_url'], noEcho: true, userJwt: cookies['cjwt'], name: cookies['user_name']})
+    .then(async (conn) => {
+      nc = conn
+      addEntry(`connected as ${cookies['user_name']} to ${nc.options.url}`)
 
       // handle errors
       nc.addEventListener('error', (err) => {
@@ -35,7 +58,7 @@ async function run() {
       })
 
       nc.subscribe('who', () => {
-          nc.publish('here', id)
+          nc.publish('here', cookies['user_name'])
       })
 
       let i = 0
@@ -45,8 +68,8 @@ async function run() {
       })
       await nc.flush()
 
-      nc.publish(`${prefix}.entered`
-          , id)
+      nc.publish(`${cookies['prefix']}.entered`
+          , cookies['user_name'])
       nc.publish('who')
     })
     .catch((err) => {
