@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sandbox</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+</head>
+<body>
+<div class="container" id="log">
+</div>
+</body>
+<script>
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const found = decodedCookie.split(';').find((v) => {
+        v = v.trim()
+        return v.indexOf("cjwt") === 0
+    })
+    if (!found) {
+        location.href = "/"
+    }
+</script>
+<script src="./assets/nats.js"></script>
+<script src="./app.js"></script>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="{{client_id}}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+    <title>Title</title>
+</head>
+<body>
+<div class="container">
+    <h1>Auth Demo Sign-In</h1>
+    <p>This demo uses Google Sign-In to provide verify a user's identity,
+and create a demo NATS account that can be used to access the demo websocket server.</p>
+
+    <div id="my-signin2"></div>
+    <div id="sign-out">
+        <a href="#" onclick="signOut();">Sign out</a>
+    </div>
+</div>
+
+<script>
+    function onSuccess(guser) {
+        const profile = guser.getBasicProfile()
+        console.log('ID: ' + profile.getId()) // Do not send to your backend! Use an ID token instead.
+        console.log('Name: ' + profile.getName())
+        console.log('Image URL: ' + profile.getImageUrl())
+        console.log('Email: ' + profile.getEmail()) // This is null if the 'email' scope is not present.
+
+        const id_token = guser.getAuthResponse().id_token;
+        console.log("id_token", id_token);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://authdemo.nats-demo.info/api/token');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = () => {
+            if (xhr.status != 200) {
+                alert("error authenticating: " + xhr.statusText)
+                return
+            }
+            setTimeout(()=> {
+                location.href = "/app.html"
+            }, 1000)
+        };
+        xhr.onerror = (err) => {
+            alert("request failed " + err)
+        }
+        xhr.send('token=' + id_token);
+    }
+
+    function onFailure(error) {
+        console.log(error)
+    }
+
+    function renderButton() {
+        gapi.signin2.render('my-signin2', {
+            'scope': 'profile email',
+            'width': 240,
+            'height': 50,
+            'longtitle': true,
+            'theme': 'dark',
+            'onsuccess': onSuccess,
+            'onfailure': onFailure
+        });
+    }
+
+    function signOut() {
+        const auth2 = gapi.auth2.getAuthInstance()
+        auth2.disconnect()
+        auth2.signOut().then(function () {
+            console.log('User signed out.')
+        });
+
+    }
+</script>
+<script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
+</body>
+</html>
