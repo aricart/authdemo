@@ -29,7 +29,7 @@
       .then((ga) => {
         if (!ga.isSignedIn.get()) {
           alert('this app requires authentication')
-          location.href = '/auth.html'
+          location.href = '/index.html'
         } else {
           const gu = ga.currentUser.get()
           let p = gu.getBasicProfile()
@@ -51,7 +51,7 @@
       .then((ga) => {
         ga.disconnect()
         alert('You have been logged out')
-        location.href = '/auth.html'
+        location.href = '/index.html'
       })
   }
 </script>

@@ -11,7 +11,7 @@ const required = ['ws_server_url', 'cjwt', 'prefix', 'user_name']
 required.forEach((v) => {
   if (!cookies[v]) {
     alert(`expected cookie ${v} is not set`)
-    location.href = "/auth.html"
+    location.href = "/index.html"
   }
 })
 
