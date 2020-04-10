@@ -5,13 +5,17 @@
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id"
           content="370606383019-jn3m29h3sq463rr42i3bv53v34vk4ups.apps.googleusercontent.com">
-    <title>WS Demo</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="demo.css">
+    <title>NATS Websocket Demo</title>
 </head>
-<body>
-<div class="container" id="logout">
-    <a href="#" onclick="logout()" id="logout"><div id="username">Logout</div></a>
+<body class="black" onbeforeunload="logout()">
+<div class="clearfix" id="logout_menu">
+    <a href="#" onclick="logout()" id="logout" class="float-right"><div id="user_name">Logout</div></a>
+</div>
+<div class="container">
+    <h1>NATS Websocket Demo</h1>
 </div>
 <div class="container" id="log">
 </div>
@@ -24,20 +28,28 @@
     })
   }
 
+  let user_image_url
   function gauthInitOK () {
-    gapi.auth2.getAuthInstance()
-      .then((ga) => {
-        if (!ga.isSignedIn.get()) {
-          alert('this app requires authentication')
-          location.href = '/index.html'
-        } else {
-          const gu = ga.currentUser.get()
-          let p = gu.getBasicProfile()
-          if (p) {
-            document.getElementById('username').innerText = `Logout ${p.getName()}`
+      gapi.auth2.getAuthInstance()
+        .then((ga) => {
+          if (!ga.isSignedIn.get()) {
+            alert('this app requires authentication')
+            location.href = '/index.html'
+          } else {
+            const gu = ga.currentUser.get()
+            let p = gu.getBasicProfile()
+            if (p) {
+              user_image_url = p.getImageUrl()
+              document.getElementById('user_name').innerText = `Logout ${p.getName()}`
+              // run the application
+              run()
+            }
           }
-        }
-      })
+        })
+  }
+
+  function getUserImage() {
+    return user_image_url
   }
 
   function gauthInitError (err) {
@@ -45,14 +57,38 @@
     alert('init error - check the console')
   }
 
+  let disconnected = false
+
   function logout () {
-    disconnectNATS()
-    gapi.auth2.getAuthInstance()
-      .then((ga) => {
-        ga.disconnect()
-        alert('You have been logged out')
-        location.href = '/index.html'
-      })
+    if (disconnected) {
+      location.href = '/index.html'
+    } else {
+      disconnected = true
+      disconnectNATS()
+      gapi.auth2.getAuthInstance()
+        .then((ga) => {
+          if (ga.isSignedIn.get()) {
+            ga.disconnect()
+            alert('You have been logged out')
+            location.href = '/index.html'
+          }
+        })
+    }
+  }
+
+  function debounce(fn, wait, immediate) {
+    let timeout
+    return function() {
+      let context = this, args = arguments;
+      let later = function() {
+        timeout = null
+        if (!immediate) fn.apply(context, args)
+      }
+      let callNow = immediate && !timeout
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+      if (callNow) fn.apply(context, args)
+    }
   }
 </script>
 <script src="https://apis.google.com/js/platform.js?onload=init"></script>

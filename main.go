@@ -172,8 +172,11 @@ func (s *AuthServer) createUserJwt(email string) ([]byte, error) {
 	uc.Name = email
 	uc.BearerToken = true
 	subj := safeSubject(email)
-	uc.Pub.Allow.Add("who")
+	uc.Pub.Allow.Add("user.who")
 	uc.Pub.Allow.Add(fmt.Sprintf("user.%s.>", subj))
+	// allow the client to respond to any request message it can get
+	uc.Resp = &jwt.ResponsePermission{}
+	uc.Resp.MaxMsgs = 1
 
 	sk, err := nkeys.FromSeed([]byte(s.ssis["account_skey"]))
 	token, err := uc.Encode(sk)

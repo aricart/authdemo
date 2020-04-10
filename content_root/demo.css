@@ -1,0 +1,38 @@
+body {
+    text-align: center;
+}
+
+.black {
+    background: black;
+    color: white;
+}
+
+a.white {
+    color: white;
+}
+
+#google-signing-button {
+    padding-top: 250px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.user_image {
+    max-width: 48px;
+    height: auto;
+}
+
+.avatar {
+    max-width: 32px;
+    vertical-align: middle;
+    padding-right: 5px;
+}
+
+#log {
+    text-align: left;
+}
+
+#logout_menu {
+    text-align: right;
+    padding-right: 10px
+}
