@@ -6,7 +6,8 @@ release:
   name_template: '{{.Tag}}'
   draft: true
 builds:
-- main: ./main.go
+- id: authdemo
+  main: ./main.go
   ldflags: "-X main.version={{.Tag}}"
   env:
     - CGO_ENABLED=0
@@ -17,11 +18,23 @@ builds:
   goarch:
   - amd64
 
+- id: pokeroom
+  main: ./pokeroom/main.go
+  ldflags: "-X main.version={{.Tag}}"
+  env:
+    - CGO_ENABLED=0
+  binary: pokeroom
+  goos:
+    - darwin
+    - linux
+  goarch:
+    - amd64
+
 dist: build
 
 archives:
   - id: "authdemo.zip"
-    wrap_in_directory: false
+    wrap_in_directory: true
     name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     format: zip
     files:

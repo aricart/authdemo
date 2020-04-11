@@ -31,12 +31,16 @@ test:
 
 release: fmt test compile
 
-update-all: update-server update-assets
+update-all: update-server update-assets update-creds
 
 update-server: compile
 	scp $(BUILD_DIR)/authdemo_linux_amd64/* root@authdemo.nats-demo.info:/usr/local/bin
+	scp $(BUILD_DIR)/pokeroom_linux_amd64/* root@authdemo.nats-demo.info:/usr/local/bin
 
 update-assets:
 	scp -r $(CONTENT_DIR)/* root@authdemo.nats-demo.info:/srv/content_root
 	scp $(CWD)/server.conf root@authdemo.nats-demo.info:/srv/
 	scp $(CWD)/gcreds.json root@authdemo.nats-demo.info:/srv/
+
+update-creds:
+	scp ~/.nkeys/creds/authdemo/authdemo/admin.creds root@authdemo.nats-demo.info:/srv/admin.creds

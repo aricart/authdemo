@@ -5,41 +5,74 @@ decodeURIComponent(document.cookie).split(';').forEach((v) => {
   v = v.trim()
   let sep = v.indexOf('=')
   const key = v.substring(0, sep)
-  const value = v.substring(sep + 1)
-  cookies[key] = value
+  cookies[key] = v.substring(sep + 1)
 })
 
 const required = ['ws_server_url', 'cjwt', 'prefix', 'user_name']
+let foundAll = true
 required.forEach((v) => {
   if (!cookies[v]) {
-    alert(`expected cookie ${v} is not set`)
-    location.href = '/index.html'
+    foundAll = false
   }
 })
+if (!foundAll) {
+  location.href = '/index.html'
+}
 
-// add an entry to the document
-function addEntry (d, who, event) {
-  const p = document.createElement('p')
-  if (who && avatars[who]) {
-    const img = document.createElement('img')
-    img.classList.add('user_image')
-    img.classList.add('avatar')
-    img.title = who
-    img.src = avatars[who]
-    p.appendChild(img)
+const me = cookies['prefix'].split('.')[1]
+
+
+function addAvatar(id) {
+
+  const container = document.getElementById('log')
+  let cn
+  if(container.hasChildNodes()) {
+    const index = Math.floor(Math.random() * container.childNodes.length)
+    console.log('calculated index')
+    cn = container.childNodes[index]
   }
-  if (event) {
-    p.appendChild(document.createTextNode(`${users[who] || who} - ${event}`))
-  } else {
-    p.appendChild(document.createTextNode(d))
+  if (avatars[id]) {
+    let img = document.getElementById(id)
+    if (!img) {
+      img = document.createElement('img')
+      img.id = id
+      img.classList.add('user_image')
+      img.classList.add('avatar')
+      img.src = avatars[id]
+      if (cn) {
+        container.insertBefore(img, cn.nextSibling)
+      } else {
+        container.appendChild(img)
+      }
+    }
   }
-  document.getElementById('log').appendChild(p)
+  updateCount()
+}
+
+function updateCount() {
+  const counter = document.getElementById('counter')
+  const ids = Object.getOwnPropertyNames(users)
+  let fake = 0
+  ids.forEach((v) => {
+    if (v.indexOf('pokenats_') === 0) {
+      fake++
+    }
+  })
+  counter.innerHTML = `${ids.length} users here - ${fake} are bots.`
+}
+
+function removeAvatar(who) {
+  const w = document.getElementById(who)
+  if (w) {
+    w.remove()
+    updateCount()
+  }
 }
 
 let nc
 function disconnectNATS () {
   if (nc && !nc.isClosed()) {
-    nc.publish(`${cookies['prefix']}.exited`)
+    nc.publish(`user.${me}.exited`)
     nc.flush().then(() => {
       nc.close()
     })
@@ -50,16 +83,23 @@ async function run () {
   nats.connect({ url: cookies['ws_server_url'], noEcho: true, userJwt: cookies['cjwt'], name: cookies['user_name'] })
     .then(async (conn) => {
       nc = conn
-
-      const me = cookies['prefix'].split('.')[1]
       users[me] = cookies['user_name']
       avatars[me] = getUserImage()
-      addEntry(`connected as ${cookies['user_name']} to ${nc.options.url}`, me)
+
+      // add an entry for us
+      const myAvatar = document.getElementById('me')
+      const img = document.createElement('img')
+      // img.classList.add('user_image')
+      img.classList.add('avatar')
+      img.src = avatars[me]
+      myAvatar.append(img)
+      const label = document.createTextNode(`Connected as ${cookies['user_name']} to ${nc.options.url}`)
+      myAvatar.appendChild(label)
+      addAvatar(me)
 
       // handle errors
       nc.addEventListener('error', (err) => {
-        addEntry(`error: ${err.toString()}`)
-        addEntry(`reloading in 1s`)
+        console.log(`error: ${err.toString()}`)
         setTimeout(() => {
           location.reload()
         }, 1000)
@@ -67,19 +107,18 @@ async function run () {
 
       // handle close
       nc.addEventListener('close', () => {
-        addEntry(`connection closed`)
-        addEntry(`will attempt to reconnect in 1s`)
+        console.log(`connection closed`)
         setTimeout(() => {
           location.reload()
         }, 1000)
       })
 
       nc.subscribe('user.who', (m) => {
-        m.respond(JSON.stringify({id: me, name: cookies['user_name'], avatar: getUserImage() }))
+        m.respond(JSON.stringify({ id: me, name: users[me], avatar: getUserImage() }))
       })
 
       let i = 0
-      nc.subscribe('user.*.*', (m) => {
+      nc.subscribe('user.*.entered', (m) => {
         i++
         const chunks = m.subject.split('.')
         if (chunks[2] === 'entered') {
@@ -88,52 +127,39 @@ async function run () {
           avatars[chunks[1]] = jm.avatar
           m.data = jm.name
         }
-        addEntry(`[${i}] ${m.subject}: ${m.data}`, chunks[1], chunks[2])
+        addAvatar(chunks[1])
+      })
+
+      nc.subscribe('user.*.exited', (m) => {
+        const chunks = m.subject.split('.')
+        delete users[chunks[1]]
+        delete avatars[chunks[1]]
+        removeAvatar(chunks[1])
       })
 
       // create a subscription to handle the request for a list of users
       const inbox = nats.nuid.next()
-      const here = []
       const hereSub = await nc.subscribe(inbox, (m) => {
         let jm = JSON.parse(m.data)
-        console.log('found one', jm)
-        here.push(jm.id)
         users[jm.id] = jm.name
         avatars[jm.id] = jm.avatar
-        done()
+        addAvatar(jm.id)
       })
 
-      const done = debounce(()=> {
-        const p = document.createElement('p')
-        here.forEach((v) => {
-          if (avatars[v]) {
-            const img = document.createElement('img')
-            img.classList.add('user_image')
-            img.classList.add('avatar')
-            img.title = users[v]
-            img.src = avatars[v]
-            p.appendChild(img)
-            console.log('added')
-          }
-        })
-        addEntry(`Found ${here.length} users already here (hover to see their names):`)
-        document.getElementById('log').appendChild(p)
-      }, 500)
       await nc.flush()
 
       // only this message is json
-      nc.publish(`${cookies['prefix']}.entered`, JSON.stringify({ name: cookies['user_name'], avatar: getUserImage() }))
+      nc.publish(`${cookies['prefix']}.entered`, JSON.stringify({ id: me, name: users[me], avatar: getUserImage() }))
       // request to find out who is here
-      nc.publish('user.who','', inbox)
+      nc.publish('user.who', '', inbox)
       setTimeout(() => {
-        hereSub.unsubscribe()
+        hereSub.drain()
       }, 5000)
     })
     .catch((err) => {
-      addEntry(`error connecting: ${err.toString()}`)
-      addEntry(`will reload in 1000`)
+      console.error('error connecting', err)
       setTimeout(() => {
         location.reload()
-      }, 1000)
+      }, 5000)
     })
 }

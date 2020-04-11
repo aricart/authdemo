@@ -1,0 +1,9 @@
+# github.com/julienschmidt/httprouter v1.3.0
+github.com/julienschmidt/httprouter
+# github.com/nats-io/jwt v0.3.3-0.20200407002238-9382d4f65334
+github.com/nats-io/jwt
+# github.com/nats-io/nkeys v0.1.4
+github.com/nats-io/nkeys
+# golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/ed25519/internal/edwards25519

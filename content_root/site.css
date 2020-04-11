@@ -11,8 +11,16 @@ a.white {
     color: white;
 }
 
+#logo {
+    padding-left: 15px;
+    padding-right: 15px;
+    max-width: 460px;
+    width: 100%;
+    height: auto;
+}
+
 #google-signing-button {
-    padding-top: 250px;
+    padding-top: 300px;
     vertical-align: middle;
     display: inline-block;
 }
@@ -23,9 +31,14 @@ a.white {
 }
 
 .avatar {
-    max-width: 32px;
+    max-width: 48px;
     vertical-align: middle;
     padding-right: 5px;
+}
+
+#me > .avatar {
+    max-width: 32px;
+    vertical-align: middle;
 }
 
 #log {
@@ -35,4 +48,8 @@ a.white {
 #logout_menu {
     text-align: right;
     padding-right: 10px
+}
+
+.centered {
+
 }
