@@ -1,0 +1,25 @@
+{
+  "name": "authdemo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "npm run test-html && npm run test-js",
+    "test-html": "standard --plugin html './content_root/*.html'",
+    "test-js": "standard './content_root/*.js'",
+    "fmt": "standard --fix './content_root/*.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aricart/authdemo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aricart/authdemo/issues"
+  },
+  "homepage": "https://github.com/aricart/authdemo#readme",
+  "dependencies": {
+    "eslint-plugin-html": "^6.0.1",
+    "standard": "^14.3.3"
+  }
+}

@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NATS Websocket Demo</title>
 </head>
-<body class="black">
+<body class="black" onload="init()">
 <div class="clearfix" id="logout_menu">
     <a href="#" id="logout" class="float-right">
         <div id="user_name">Logout</div>
@@ -27,17 +27,59 @@
 </div>
 </body>
 <script>
-    function init() {
-      auth()
-      window.addEventListener('beforeunload', exit)
-      document.getElementById('logout').onclick = logout
+  let app
+
+  // start the authentication once the google authentication script is loaded
+  function init () {
+    auth()
+      .then(() => {
+        app = new App()
+        app.run()
+        // register some listeners - window/tab closing
+        window.addEventListener('beforeunload', exit)
+        document.getElementById('logout').onclick = logout
+        const log = document.getElementById('log')
+        log.onmousemove = throttle(() => {
+          app.moved()
+        }, 400)
+        log.touchmove = throttle(() => {
+          app.moved()
+        }, 400)
+      })
+      .catch((err) => {
+        if (err) {
+          console.log(err)
+          alert('init error - check the console')
+        }
+        location.href = '/index.html'
+      })
+  }
+
+  // if they click the logout, remember to disconnect the application
+  let disconnectAuth
+
+  function logout () {
+    disconnectAuth = true
+    exit()
+  }
+
+  // disconnect nats if they close
+  async function exit () {
+    if (app && app.isConnected()) {
+      app.disconnect()
     }
+    if (disconnectAuth) {
+      disconnect()
+    }
+    location.href = '/index.html'
+    return true
+  }
 </script>
 <script src="./assets/nats.js"></script>
-<script src="auth.js"></script>
 <script src="context.js"></script>
+<script src="auth.js"></script>
 <script src="avatars.js"></script>
-<script src="app.js"></script>
 <script src="util.js"></script>
-<script src="https://apis.google.com/js/platform.js?onload=init"></script>
+<script src="app.js"></script>
+<script src="https://apis.google.com/js/platform.js?onload"></script>
 </html>

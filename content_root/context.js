@@ -1,18 +1,16 @@
 class UserContext {
-  static avatar
-  static name
-  static setUserInfo(name, avatar) {
-    UserContext.name = name
+  static setUserInfo (name, avatar) {
+    UserContext.userName = name
     UserContext.avatar = avatar
   }
 
-  static getCookie(name) {
+  static getCookie (name) {
     let cookies
-    if(!cookies) {
+    if (!cookies) {
       cookies = {}
       decodeURIComponent(document.cookie).split(';').forEach((v) => {
         v = v.trim()
-        let sep = v.indexOf('=')
+        const sep = v.indexOf('=')
         const key = v.substring(0, sep)
         cookies[key] = v.substring(sep + 1)
       })
@@ -33,35 +31,35 @@ class UserContext {
     }
   }
 
-  me() {
+  me () {
     return {
       id: this.getID(),
-      name: UserContext.name,
+      name: UserContext.userName,
       avatar: UserContext.avatar
     }
   }
 
-  getName() {
-    return UserContext.name
+  getName () {
+    return UserContext.userName
   }
 
-  getAvatar() {
+  getAvatar () {
     return UserContext.avatar
   }
 
-  getID() {
+  getID () {
     return UserContext.getCookie('prefix').split('.')[1]
   }
 
-  getJWT() {
+  getJWT () {
     return UserContext.getCookie('cjwt')
   }
 
-  getPrefix() {
+  getPrefix () {
     return UserContext.getCookie('prefix')
   }
 
-  getServerURL() {
+  getServerURL () {
     return UserContext.getCookie('ws_server_url')
   }
 }

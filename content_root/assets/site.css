@@ -36,6 +36,10 @@ a.white {
     padding-right: 5px;
 }
 
+.active {
+    border: 3px solid orange;
+}
+
 #me > .avatar {
     max-width: 32px;
     vertical-align: middle;
