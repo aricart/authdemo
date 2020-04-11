@@ -28,7 +28,6 @@ function addAvatar(id) {
   let cn
   if(container.hasChildNodes()) {
     const index = Math.floor(Math.random() * container.childNodes.length)
-    console.log('calculated index')
     cn = container.childNodes[index]
   }
   if (avatars[id]) {

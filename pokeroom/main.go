@@ -73,7 +73,7 @@ func (r *PokeRoom) newPoke(c int) {
 		imgs := []string{"N.png", "A.png", "T.png", "S.png"}
 		idx := rand.Intn(4)
 		id := fmt.Sprintf("pokenats_%s", nuid.Next())
-		img := fmt.Sprintf("https://authdemo.nats-demo.info/%s", imgs[idx])
+		img := fmt.Sprintf("https://authdemo.nats-demo.info/assets/%s", imgs[idx])
 		r.fake[id] = img
 		if r.nc != nil {
 			payload := []byte(fmt.Sprintf(`{ "name": "%s", "id": "%s", "avatar": "%s"}`, id, id, img))

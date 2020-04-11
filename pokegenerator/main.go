@@ -28,7 +28,7 @@ func main() {
 	for i := 0; i < count; i++ {
 		idx := rand.Intn(4)
 		id := fmt.Sprintf("pokenats_%s", nuid.Next())
-		payload := fmt.Sprintf(`{ "name": "%s", "id": "%s", "avatar": "https://authdemo.nats-demo.info/%s"}`, id, id, imgs[idx])
+		payload := fmt.Sprintf(`{ "name": "%s", "id": "%s", "avatar": "https://authdemo.nats-demo.info/assets/%s"}`, id, id, imgs[idx])
 		sub := fmt.Sprintf("user.%s.entered", id)
 		fmt.Println(sub, payload)
 		if err := nc.Publish(sub, []byte(payload)); err != nil {
