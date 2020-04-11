@@ -38,6 +38,7 @@ func (r *PokeRoom) Run() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("connected to NATS filling up room with", r.max, "pokenats")
 	r.nc = c
 
 	_, err = r.nc.Subscribe("user.*.entered", r.AddVisitor)

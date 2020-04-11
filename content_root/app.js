@@ -1,100 +1,31 @@
-const cookies = {}
-const avatars = {}
-const users = {}
-decodeURIComponent(document.cookie).split(';').forEach((v) => {
-  v = v.trim()
-  let sep = v.indexOf('=')
-  const key = v.substring(0, sep)
-  cookies[key] = v.substring(sep + 1)
-})
-
-const required = ['ws_server_url', 'cjwt', 'prefix', 'user_name']
-let foundAll = true
-required.forEach((v) => {
-  if (!cookies[v]) {
-    foundAll = false
-  }
-})
-if (!foundAll) {
-  location.href = '/index.html'
-}
-
-const me = cookies['prefix'].split('.')[1]
-
-
-function addAvatar(id) {
-
-  const container = document.getElementById('log')
-  let cn
-  if(container.hasChildNodes()) {
-    const index = Math.floor(Math.random() * container.childNodes.length)
-    cn = container.childNodes[index]
-  }
-  if (avatars[id]) {
-    let img = document.getElementById(id)
-    if (!img) {
-      img = document.createElement('img')
-      img.id = id
-      img.classList.add('user_image')
-      img.classList.add('avatar')
-      img.src = avatars[id]
-      if (cn) {
-        container.insertBefore(img, cn.nextSibling)
-      } else {
-        container.appendChild(img)
-      }
-    }
-  }
-  updateCount()
-}
-
-function updateCount() {
-  const counter = document.getElementById('counter')
-  const ids = Object.getOwnPropertyNames(users)
-  let fake = 0
-  ids.forEach((v) => {
-    if (v.indexOf('pokenats_') === 0) {
-      fake++
-    }
-  })
-  counter.innerHTML = `${ids.length} users here - ${fake} are bots.`
-}
-
-function removeAvatar(who) {
-  const w = document.getElementById(who)
-  if (w) {
-    w.remove()
-    updateCount()
-  }
-}
+const uc = new UserContext()
+const avatars = new Avatars()
 
 let nc
+function isConnected() {
+  return nc && !nc.isClosed()
+}
 function disconnectNATS () {
-  if (nc && !nc.isClosed()) {
-    nc.publish(`user.${me}.exited`)
+  if (isConnected()) {
+    nc.publish(`user.${uc.getID()}.exited`)
     nc.flush().then(() => {
       nc.close()
+      nc = null
     })
   }
 }
 
 async function run () {
-  nats.connect({ url: cookies['ws_server_url'], noEcho: true, userJwt: cookies['cjwt'], name: cookies['user_name'] })
+  nats.connect({ url: uc.getServerURL(),
+    noEcho: true,
+    userJwt: uc.getJWT(),
+    name: uc.getName()
+  })
     .then(async (conn) => {
       nc = conn
-      users[me] = cookies['user_name']
-      avatars[me] = getUserImage()
 
-      // add an entry for us
-      const myAvatar = document.getElementById('me')
-      const img = document.createElement('img')
-      // img.classList.add('user_image')
-      img.classList.add('avatar')
-      img.src = avatars[me]
-      myAvatar.append(img)
-      const label = document.createTextNode(`Connected as ${cookies['user_name']} to ${nc.options.url}`)
-      myAvatar.appendChild(label)
-      addAvatar(me)
+      avatars.enter(JSON.stringify(uc.me()))
+      avatars.setMyAvatar(uc.getID(), `Connected as ${uc.getID()} to ${nc.options.url}`)
 
       // handle errors
       nc.addEventListener('error', (err) => {
@@ -112,43 +43,30 @@ async function run () {
         }, 1000)
       })
 
+      // answer any queries for who is here
       nc.subscribe('user.who', (m) => {
-        m.respond(JSON.stringify({ id: me, name: users[me], avatar: getUserImage() }))
+        m.respond(JSON.stringify(uc.me()))
       })
 
-      let i = 0
       nc.subscribe('user.*.entered', (m) => {
-        i++
-        const chunks = m.subject.split('.')
-        if (chunks[2] === 'entered') {
-          let jm = JSON.parse(m.data)
-          users[chunks[1]] = chunks[1]
-          avatars[chunks[1]] = jm.avatar
-          m.data = jm.name
-        }
-        addAvatar(chunks[1])
+        avatars.enter(m.data)
       })
 
       nc.subscribe('user.*.exited', (m) => {
         const chunks = m.subject.split('.')
-        delete users[chunks[1]]
-        delete avatars[chunks[1]]
-        removeAvatar(chunks[1])
+        avatars.exit(chunks[1])
       })
 
       // create a subscription to handle the request for a list of users
       const inbox = nats.nuid.next()
       const hereSub = await nc.subscribe(inbox, (m) => {
-        let jm = JSON.parse(m.data)
-        users[jm.id] = jm.name
-        avatars[jm.id] = jm.avatar
-        addAvatar(jm.id)
+        avatars.enter(m.data)
       })
 
       await nc.flush()
 
-      // only this message is json
-      nc.publish(`${cookies['prefix']}.entered`, JSON.stringify({ id: me, name: users[me], avatar: getUserImage() }))
+      // tell everyone we are here
+      nc.publish(`${uc.getPrefix()}.entered`, JSON.stringify(uc.me()))
       // request to find out who is here
       nc.publish('user.who', '', inbox)
       setTimeout(() => {

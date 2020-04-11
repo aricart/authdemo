@@ -11,9 +11,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NATS Websocket Demo</title>
 </head>
-<body class="black" onbeforeunload="logout()">
+<body class="black">
 <div class="clearfix" id="logout_menu">
-    <a href="#" onclick="logout()" id="logout" class="float-right"><div id="user_name">Logout</div></a>
+    <a href="#" id="logout" class="float-right">
+        <div id="user_name">Logout</div>
+    </a>
 </div>
 <div class="jumbotron jumbotron-fluid black d-flex justify-content-center">
     <h1>Websocket Demo</h1>
@@ -25,77 +27,17 @@
 </div>
 </body>
 <script>
-  function init () {
-    gapi.load('auth2', () => {
-      gapi.auth2.init()
-        .then(gauthInitOK, gauthInitError)
-    })
-  }
-
-  let user_image_url
-  function gauthInitOK () {
-      gapi.auth2.getAuthInstance()
-        .then((ga) => {
-          if (!ga.isSignedIn.get()) {
-            alert('this app requires authentication')
-            location.href = '/index.html'
-          } else {
-            const gu = ga.currentUser.get()
-            let p = gu.getBasicProfile()
-            if (p) {
-              user_image_url = p.getImageUrl()
-              document.getElementById('user_name').innerText = `Logout ${p.getName()}`
-              // run the application
-              run()
-            }
-          }
-        })
-  }
-
-  function getUserImage() {
-    return user_image_url
-  }
-
-  function gauthInitError (err) {
-    console.log(err)
-    alert('init error - check the console')
-  }
-
-  let disconnected = false
-
-  function logout () {
-    if (disconnected) {
-      location.href = '/index.html'
-    } else {
-      disconnected = true
-      disconnectNATS()
-      gapi.auth2.getAuthInstance()
-        .then((ga) => {
-          if (ga.isSignedIn.get()) {
-            ga.disconnect()
-            alert('You have been logged out')
-            location.href = '/index.html'
-          }
-        })
+    function init() {
+      auth()
+      window.addEventListener('beforeunload', exit)
+      document.getElementById('logout').onclick = logout
     }
-  }
-
-  function debounce(fn, wait, immediate) {
-    let timeout
-    return function() {
-      let context = this, args = arguments;
-      let later = function() {
-        timeout = null
-        if (!immediate) fn.apply(context, args)
-      }
-      let callNow = immediate && !timeout
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-      if (callNow) fn.apply(context, args)
-    }
-  }
 </script>
-<script src="https://apis.google.com/js/platform.js?onload=init"></script>
 <script src="./assets/nats.js"></script>
-<script src="./app.js"></script>
+<script src="auth.js"></script>
+<script src="context.js"></script>
+<script src="avatars.js"></script>
+<script src="app.js"></script>
+<script src="util.js"></script>
+<script src="https://apis.google.com/js/platform.js?onload=init"></script>
 </html>
