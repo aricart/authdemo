@@ -19,12 +19,13 @@ async function run () {
   nats.connect({ url: uc.getServerURL(),
     noEcho: true,
     userJwt: uc.getJWT(),
-    name: uc.getName()
+    name: uc.getName(),
+    payload: nats.Payload.JSON
   })
     .then(async (conn) => {
       nc = conn
 
-      avatars.enter(JSON.stringify(uc.me()))
+      avatars.enter(uc.me())
       avatars.setMyAvatar(uc.getID(), `Connected as ${uc.getID()} to ${nc.options.url}`)
 
       // handle errors
@@ -45,7 +46,7 @@ async function run () {
 
       // answer any queries for who is here
       nc.subscribe('user.who', (m) => {
-        m.respond(JSON.stringify(uc.me()))
+        m.respond(uc.me())
       })
 
       nc.subscribe('user.*.entered', (m) => {
@@ -66,7 +67,7 @@ async function run () {
       await nc.flush()
 
       // tell everyone we are here
-      nc.publish(`${uc.getPrefix()}.entered`, JSON.stringify(uc.me()))
+      nc.publish(`${uc.getPrefix()}.entered`, uc.me())
       // request to find out who is here
       nc.publish('user.who', '', inbox)
       setTimeout(() => {

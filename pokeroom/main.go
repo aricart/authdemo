@@ -121,7 +121,8 @@ func (r *PokeRoom) evict(c int) {
 	for _, v := range keys {
 		delete(r.fake, v)
 		subj := fmt.Sprintf("user.%s.exited", v)
-		r.nc.Publish(subj, nil)
+		jp, _ := json.Marshal(nil)
+		r.nc.Publish(subj, jp)
 	}
 }
 

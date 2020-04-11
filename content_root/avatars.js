@@ -4,8 +4,7 @@ class Avatars {
     this.users = {}
   }
 
-  enter(s) {
-    const u = JSON.parse(s)
+  enter(u) {
     this.users[u.id] = u.name
     this.avatars[u.id] = u.avatar
     this.addAvatar(u.id)

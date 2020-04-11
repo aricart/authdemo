@@ -12,7 +12,7 @@
 </head>
 <body class="black">
 <div class="jumbotron jumbotron-fluid black d-flex justify-content-center">
-    <img src="assets/large-logo.png" id="logo" class="img-fluid"/>
+    <img src="assets/large-logo.png" id="logo" class="img-fluid" alt="logo"/>
     <h1 class="mx-auto">Websocket Demo</h1>
     <p class="lead">Welcome to NATS running natively in the browser!</p>
     <p class="lead text-white"><a href="https://github.com/nats-io/nats.ws">https://github.com/nats-io/nats.ws</a></p>
@@ -20,8 +20,20 @@
 </div>
 
 <script>
-  function onSuccess (guser) {
-    const id_token = guser.getAuthResponse().id_token
+  function renderButton () {
+    gapi.signin2.render('google-signing-button', {
+      'scope': 'profile email',
+      'width': 240,
+      'height': 50,
+      'longtitle': true,
+      'theme': 'dark',
+      'onsuccess': onSuccess,
+      'onfailure': onFailure
+    })
+  }
+
+  function onSuccess (gu) {
+    const id_token = gu.getAuthResponse().id_token
     const xhr = new XMLHttpRequest()
     xhr.open('POST', 'https://authdemo.nats-demo.info/api/token')
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
@@ -42,18 +54,6 @@
   function onFailure (error) {
     console.log(error)
     alert('Unable to log in - check the console')
-  }
-
-  function renderButton () {
-    gapi.signin2.render('google-signing-button', {
-      'scope': 'profile email',
-      'width': 240,
-      'height': 50,
-      'longtitle': true,
-      'theme': 'dark',
-      'onsuccess': onSuccess,
-      'onfailure': onFailure
-    })
   }
 </script>
 <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
