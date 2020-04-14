@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "copy": "cp ./node_modules/nats.ws/nats.* content_root/assets",
     "test": "npm run test-html && npm run test-js",
     "test-html": "standard --plugin html './content_root/*.html'",
     "test-js": "standard './content_root/*.js'",

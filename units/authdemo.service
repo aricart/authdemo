@@ -1,0 +1,23 @@
+# install the nats-server binary found in this repo
+# (or a released version that supports websockets)
+# place a server configuration file in /srv/server.conf
+# copy to /etc/systemd/system/
+# systemd enable nats-server
+# systemd start nats-server
+
+[Unit]
+Description=authdemo service
+After=network.target
+
+[Service]
+PIDFile=/var/run/authdemo.pid
+WorkingDirectory=/srv/
+ExecStart=/usr/local/bin/authdemo
+OOMScoreAdjust=-999
+LimitNOFILE=64000
+User=root
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

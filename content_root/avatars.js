@@ -17,6 +17,7 @@ class Avatars {
   }
 
   setMyAvatar (id, message) {
+    this.me = id
     const myAvatar = document.getElementById('me')
     const img = document.createElement('img')
     img.classList.add('avatar')
@@ -63,9 +64,10 @@ class Avatars {
       if (img.timeout) {
         clearTimeout(img.timeout)
       }
-      img.classList.add('active')
+      const c = id === this.me ? 'moving' : 'active'
+      img.classList.add(c)
       img.timeout = setTimeout(() => {
-        img.classList.remove('active')
+        img.classList.remove(c)
       },1000)
     }
   }

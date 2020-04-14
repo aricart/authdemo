@@ -1,0 +1,23 @@
+# install the nats-server binary found in this repo
+# (or a released version that supports websockets)
+# place a server configuration file in /srv/server.conf
+# copy to /etc/systemd/system/
+# systemctl enable nats-server
+# systemctl start nats-server
+
+[Unit]
+Description=nats-server
+After=network.target
+
+[Service]
+PIDFile=/var/run/natsd.pid
+WorkingDirectory=/srv
+ExecStart=/usr/local/bin/nats-server -c /srv/server.conf
+OOMScoreAdjust=-999
+LimitNOFILE=64000
+User=root
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

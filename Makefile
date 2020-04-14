@@ -33,6 +33,12 @@ release: fmt test compile
 
 update-all: update-server update-assets update-creds
 
+install-units:
+	scp $(CWD)/units/* root@authdemo.nats-demo.info:/etc/systemd/system/
+
+install-nats:
+	scp $(CWD)/nats-server-v2.1.4-linux-amd64/nats-server root@authdemo.nats-demo.info:/usr/local/bin
+
 update-server: compile
 	scp $(BUILD_DIR)/authdemo_linux_amd64/* root@authdemo.nats-demo.info:/usr/local/bin
 	scp $(BUILD_DIR)/pokeroom_linux_amd64/* root@authdemo.nats-demo.info:/usr/local/bin

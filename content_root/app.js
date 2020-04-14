@@ -11,7 +11,7 @@ class App {
     nats.connect({
       url: this.uc.getServerURL(),
       noEcho: true,
-      userJwt: this.uc.getJWT(),
+      jwt: this.uc.getJWT(),
       name: this.uc.getName(),
       payload: nats.Payload.JSON
     }).then((nc) => {
@@ -88,6 +88,7 @@ class App {
   }
 
   moved() {
+    this.avatars.active(this.uc.getID())
     this.nc.publish(`user.${this.uc.getID()}.active`, null)
   }
 
@@ -97,7 +98,7 @@ class App {
     // normally we would simply perform a `request()`, but in this case
     // we are interested in receiving all replies for who is out there
     // not just the first that answers
-    const inbox = `_inbox.${nats.nuid.next()}`
+    const inbox = `_inbox.user.${nats.nuid.next()}`
     let drain
     const sub = await this.nc.subscribe(inbox, (m) => {
       this.avatars.enter(m.data)
