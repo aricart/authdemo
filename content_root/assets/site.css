@@ -26,12 +26,13 @@ a.white {
 }
 
 .user_image {
-    max-width: 48px;
+    width: 72px;
     height: auto;
 }
 
 .avatar {
-    max-width: 48px;
+    width: 72px;
+    height: auto;
     vertical-align: middle;
     padding-right: 5px;
 }
@@ -51,6 +52,7 @@ a.white {
 
 #log {
     text-align: left;
+    max-width: 770px;
 }
 
 #logout_menu {
