@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "copy": "cp ./node_modules/nats.ws/nats.* content_root/assets",
+    "postinstall": "cp ./node_modules/nats.ws/nats.* content_root/assets",
     "test": "npm run test-html && npm run test-js",
     "test-html": "standard --plugin html './content_root/*.html'",
     "test-js": "standard './content_root/*.js'",
@@ -21,6 +21,7 @@
   "homepage": "https://github.com/aricart/authdemo#readme",
   "dependencies": {
     "eslint-plugin-html": "^6.0.1",
+    "nats.ws": "^1.0.0-17",
     "standard": "^14.3.3"
   }
 }

@@ -66,22 +66,22 @@ class App {
     })
 
     // answer any queries for who is here
-    nc.subscribe('user.who', (m) => {
+    nc.subscribe('user.who', (_, m) => {
       m.respond(this.uc.me())
     })
 
     // subscribe to user entered notifications
-    nc.subscribe('user.*.entered', (m) => {
+    nc.subscribe('user.*.entered', (_, m) => {
       this.avatars.enter(m.data)
     })
 
     // subscribe to user exited notifications
-    nc.subscribe('user.*.exited', (m) => {
+    nc.subscribe('user.*.exited', (_, m) => {
       const chunks = m.subject.split('.')
       this.avatars.exit(chunks[1])
     })
 
-    nc.subscribe('user.*.active', (m) => {
+    nc.subscribe('user.*.active', (_, m) => {
       const chunks = m.subject.split('.')
       this.avatars.active(chunks[1])
     })
@@ -100,7 +100,7 @@ class App {
     // not just the first that answers
     const inbox = `_inbox.user.${nats.nuid.next()}`
     let drain
-    const sub = await this.nc.subscribe(inbox, (m) => {
+    const sub = await this.nc.subscribe(inbox, (_, m) => {
       this.avatars.enter(m.data)
       if (!drain) {
         // create a debounced version of subscription.drain() that will be called
